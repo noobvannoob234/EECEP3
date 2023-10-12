@@ -31,8 +31,10 @@
  */
 int p2p(const int s, uint32_t peer);
 int lookup_and_connect(const char *host, const char *service);
-void p2p(); ;
 
+int join(); 
+int search(); 
+int publish(); 
 
 int main(int argc, char *argv[]) {
   char input[10]; 
@@ -54,9 +56,17 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
   while(strcmp(input,"EXIT") != 0){
-  
+    fgets(input, sizeof(input), stdin);
+    char * p = strchr(input, '\n' );
+    if (p) *p = '\0';
 
-    
+    if()
+    elseif()
+    elseif()
+    elseif()
+    else(){
+
+    }     
   }
     
 
