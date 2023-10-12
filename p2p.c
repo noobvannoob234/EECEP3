@@ -31,7 +31,7 @@
  */
 int lookup_and_connect(const char *host, const char *service);
 
-int join(uint32_t id); 
+int join(uint32_t id, int s, char[] buf); 
 int search(); 
 int publish(); 
 
@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
     }     
   }
     
-
+  }
     
   /* Main loop: get and send lines of text */
   close(s);
@@ -129,4 +129,18 @@ int main(int argc, char *argv[]) {
   freeaddrinfo(result);
 
   return s;
+}
+
+/* send join request to server */
+int join(uint32_t id, int s, char[] buf) {
+
+  buf[0] = 0;
+
+  memcpy(buf + 1, &id, 4);
+
+  if (send(s, buf, sizeof(buf), 0) == -1) {
+        perror("p2p peer: send");
+        close(s);
+        return 1;
+    }
 }
