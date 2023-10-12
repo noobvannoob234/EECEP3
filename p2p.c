@@ -29,10 +29,9 @@
  * Returns a connected socket descriptor or -1 on error. Caller is responsible
  * for closing the returned socket.
  */
-int p2p(const int s, uint32_t peer);
 int lookup_and_connect(const char *host, const char *service);
 
-int join(); 
+int join(uint32_t id); 
 int search(); 
 int publish(); 
 
@@ -59,11 +58,26 @@ int main(int argc, char *argv[]) {
     fgets(input, sizeof(input), stdin);
     char * p = strchr(input, '\n' );
     if (p) *p = '\0';
-
-    if()
-    elseif()
-    elseif()
-    elseif()
+    if(strcmp(input, "JOIN") == 0){
+      if(join(peerid) == 1){
+        perror("Invalid\n"); 
+        return 1; 
+      }
+    }
+    elseif(strcmp(input,"SEARCH")){
+      if(search() == 1){
+        perror("Invalid\n"); 
+        return 1; 
+      }
+    }
+    elseif(strcmp(intput,"PUBLISH")){
+      if(publish() == 1){
+        perror("Invalid\n"); 
+        return 1; 
+      }
+    }
+    elseif(strcmp(input,"EXIT")){
+    }
     else(){
 
     }     
