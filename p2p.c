@@ -17,11 +17,9 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#define JOIN_ACTION 0
-#define PUBLISH_ACTION 1
-#define SEARCH_ACTION 2
-#define FETCH_ACTION 3
+#include <dirent.h>
 #define PUBLISH_DIRECTORY "SharedFiles"
+#define BUFFER_SIZE 200
 /*
  * Lookup a host IP address and connect to it using service. Arguments match the
  * first two arguments to getaddrinfo(3).
@@ -31,18 +29,18 @@
  */
 int lookup_and_connect(const char *host, const char *service);
 
-int join(uint32_t id, int s, char *buff);
-int search();
-int publish();
+int join(uint32_t id, int s, char *buf);
+int search(int s, char *buf);
+int publish(int s, char *buf);
 
 int main(int argc, char *argv[]) {
-  char input[10], buf[10];
-  
+  char input[10], buf[BUFFER_SIZE];
+
   if (argc != 2) {
     printf("usage: port#\n");
     exit(1);
   }
-  char *port = argv[1]; 
+  char *port = argv[1];
   if (atoi(port) <= 2000 || atoi(port) >= 65535) {
     printf("Invalid port number.\n");
     exit(1);
@@ -56,9 +54,9 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
   while (strcmp(input, "EXIT") != 0) {
-    if(fgets(input, sizeof(input), stdin) == NULL){
+    if (fgets(input, sizeof(input), stdin) == NULL) {
       printf("Fgets error\n");
-      break; 
+      break;
     }
     char *p = strchr(input, '\n');
     if (p)
@@ -68,13 +66,13 @@ int main(int argc, char *argv[]) {
         perror("Invalid\n");
         return 1;
       }
-    } else if (strcmp(input, "SEARCH") == 0) {
-      if (search() == 1) {
+    } else if (strcmp(input, "PUBLISH") == 0) {
+      if (publish(s, buf) == 1) {
         perror("Invalid\n");
         return 1;
       }
-    } else if (strcmp(input, "PUBLISH") == 0) {
-      if (publish() == 1) {
+    } else if (strcmp(input, "SEARCH") == 0) {
+      if (search(s, buf) == 1) {
         perror("Invalid\n");
         return 1;
       }
@@ -141,4 +139,47 @@ int join(uint32_t id, int s, char *buf) {
     close(s);
     return 1;
   }
+}
+int publish(int s, char *buf) {
+  int length = 0; 
+  DIR *d;
+  struct dirent *dir;
+  uint32_t ncount = 0;
+
+  d = opendir(PUBLISH_DIRECTORY);
+  if (d) {
+    while ((dir = readdir(d))) {
+      if (dir->d_type != DT_DIR) {
+        if (length + strlen(dir->d_name) + 1 > BUFFER_SIZE) {
+          printf("Packet exceeds max permitted size\n");
+          return -1;
+        }
+        for (int i = 0; i < strlen(dir->d_name) + 1; i++) {
+          buf[length + 5 + i] = dir->d_name[i];
+        }
+        length = length + strlen(dir->d_name) + 1;
+        ncount++;
+      }
+    }
+    closedir(d);
+  }
+  
+  return 0; 
+}
+
+int search(int s, char *buf) {
+  char input[20];
+  if (fgets(input, sizeof(input), stdin))
+    return -1;
+  char *p = strchr(input, '\n');
+  int index = (int)(p - input);
+  buf[0] = 2;
+  memcpy(buf + 1, input, index); 
+  if (send(s, buf, sizeof(buf), 0) == -1) {
+    perror("p2p peer: send");
+    close(s);
+    return 1;
+  }
+  //Recv  then parse with inet)ntop
+  return 0; 
 }
