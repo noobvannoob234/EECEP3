@@ -31,68 +31,66 @@
  */
 int lookup_and_connect(const char *host, const char *service);
 
-int join(uint32_t id, int s, char[] buf); 
-int search(); 
-int publish(); 
+int join(uint32_t id, int s, char *buff);
+int search();
+int publish();
 
 int main(int argc, char *argv[]) {
-  char input[10]; 
-  if(argc == 2){
-    char* SERVER_PORT = argv[1];   
-    if(atoi(SERVER_PORT) <= 2000 || atoi(SERVER_PORT) >= 65535){
-      printf("Invalid port number.\n");
-      exit(1);
-  }
-  else{
-      printf("usage: %s port#\n");
-      exit(1); 
-  }
-  char *host = "www.ecst.csuchico.edu";
-  int s; // fd
-  uint32_t peerid = 3789; 
-  /* Lookup IP and connect to server */
-  if ((s = lookup_and_connect(host, SERVER_PORT)) < 0) {
+  char input[10], buf[10];
+  
+  if (argc != 2) {
+    printf("usage: port#\n");
     exit(1);
   }
-  while(strcmp(input,"EXIT") != 0){
-    fgets(input, sizeof(input), stdin);
-    char * p = strchr(input, '\n' );
-    if (p) *p = '\0';
-    if(strcmp(input, "JOIN") == 0){
-      if(join(peerid) == 1){
-        perror("Invalid\n"); 
-        return 1; 
-      }
+  char *port = argv[1]; 
+  if (atoi(port) <= 2000 || atoi(port) >= 65535) {
+    printf("Invalid port number.\n");
+    exit(1);
+  }
+
+  char *host = "www.ecst.csuchico.edu";
+  int s; // fd
+  uint32_t peerid = 3789;
+  /* Lookup IP and connect to server */
+  if ((s = lookup_and_connect(host, port)) < 0) {
+    exit(1);
+  }
+  while (strcmp(input, "EXIT") != 0) {
+    if(fgets(input, sizeof(input), stdin) == NULL){
+      printf("Fgets error\n");
+      break; 
     }
-    else if(strcmp(input,"SEARCH") == 0){
-      if(search() == 1){
-        perror("Invalid\n"); 
-        return 1; 
+    char *p = strchr(input, '\n');
+    if (p)
+      *p = '\0';
+    if (strcmp(input, "JOIN") == 0) {
+      if (join(peerid, s, buf) == 1) {
+        perror("Invalid\n");
+        return 1;
       }
-    }
-    else if(strcmp(input,"PUBLISH") == 0){
-      if(publish() == 1){
-        perror("Invalid\n"); 
-        return 1; 
+    } else if (strcmp(input, "SEARCH") == 0) {
+      if (search() == 1) {
+        perror("Invalid\n");
+        return 1;
       }
-    }
-    else if(strcmp(input,"EXIT")== 0){
+    } else if (strcmp(input, "PUBLISH") == 0) {
+      if (publish() == 1) {
+        perror("Invalid\n");
+        return 1;
+      }
+    } else if (strcmp(input, "EXIT") == 0) {
       printf("exiting\n");
+    } else {
+      printf("Invalid input\n");
     }
-    else{
-    printf("Invalid input\n");
-    }     
   }
-    
-  }
-    
-  /* Main loop: get and send lines of text */
+
   close(s);
 
   return 0;
-  }  
-  
-  int lookup_and_connect(const char *host, const char *service) {
+}
+
+int lookup_and_connect(const char *host, const char *service) {
   struct addrinfo hints;
   struct addrinfo *rp, *result;
   int s;
@@ -125,22 +123,22 @@ int main(int argc, char *argv[]) {
     perror("stream-talk-client: connect");
     return -1;
   }
-  
+
   freeaddrinfo(result);
 
   return s;
 }
 
 /* send join request to server */
-int join(uint32_t id, int s, char[] buf) {
+int join(uint32_t id, int s, char *buf) {
 
   buf[0] = 0;
 
   memcpy(buf + 1, &id, 4);
 
   if (send(s, buf, sizeof(buf), 0) == -1) {
-        perror("p2p peer: send");
-        close(s);
-        return 1;
-    }
+    perror("p2p peer: send");
+    close(s);
+    return 1;
+  }
 }
