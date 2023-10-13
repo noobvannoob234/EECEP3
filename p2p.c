@@ -31,35 +31,43 @@
  */
 int lookup_and_connect(const char *host, const char *service);
 
-int join(uint32_t id, int s, char[] buf); 
+int join(uint32_t id, int s, char buf[]); 
 int search(); 
 int publish(); 
 
 int main(int argc, char *argv[]) {
+
+  char* SERVER_PORT;
   char input[10]; 
+
   if(argc == 2){
     char* SERVER_PORT = argv[1];   
     if(atoi(SERVER_PORT) <= 2000 || atoi(SERVER_PORT) >= 65535){
       printf("Invalid port number.\n");
       exit(1);
+    }
+    else{
+        printf("usage: %s port#\n");
+        exit(1); 
+    }
   }
-  else{
-      printf("usage: %s port#\n");
-      exit(1); 
-  }
+
   char *host = "www.ecst.csuchico.edu";
   int s; // fd
   uint32_t peerid = 3789; 
+
   /* Lookup IP and connect to server */
   if ((s = lookup_and_connect(host, SERVER_PORT)) < 0) {
     exit(1);
   }
+
+  /* main while loop for user input*/
   while(strcmp(input,"EXIT") != 0){
     fgets(input, sizeof(input), stdin);
     char * p = strchr(input, '\n' );
     if (p) *p = '\0';
     if(strcmp(input, "JOIN") == 0){
-      if(join(peerid) == 1){
+      if(join(peerid, s, input) == 1){
         perror("Invalid\n"); 
         return 1; 
       }
@@ -84,15 +92,12 @@ int main(int argc, char *argv[]) {
     }     
   }
     
-  }
-    
   /* Main loop: get and send lines of text */
   close(s);
-
   return 0;
-  }  
+}  
   
-  int lookup_and_connect(const char *host, const char *service) {
+int lookup_and_connect(const char *host, const char *service) {
   struct addrinfo hints;
   struct addrinfo *rp, *result;
   int s;
@@ -132,15 +137,14 @@ int main(int argc, char *argv[]) {
 }
 
 /* send join request to server */
-int join(uint32_t id, int s, char[] buf) {
-
-  buf[0] = 0;
-
+int join(uint32_t id, int s, char buf[]) {
+  buf[0] = 0; //JOIN_ACTION = 0
   memcpy(buf + 1, &id, 4);
-
-  if (send(s, buf, sizeof(buf), 0) == -1) {
+  if (send(s, buf, sizeof(buf), 0) == -1) { //if send fails return error
         perror("p2p peer: send");
         close(s);
         return 1;
-    }
+  }
+  return 0;
 }
+
