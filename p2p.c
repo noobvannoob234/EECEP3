@@ -175,33 +175,27 @@ int search(int s, char *buf) {
     return -1;
   }
   char *p = strchr(input, '\n');
-  if (p)
-    *p = '\0';
+  if (p) *p = '\0'; 
   int index = (int)(p - input);
   buf[0] = 2;
   memcpy(buf + 1, input, index + 1);
-  for (int i = 0; i < index + 2; i++) {
-    if (input[i] = '\0') {
-      printf("0");
-    }
-    printf("%c", input[i]);
+  for(int i = 0; i < index + 2; i++){
+  if(input[i] = '\0'){printf("0");}
+  printf("%c", input[i]);
   }
   if (send(s, buf, index + 2, 0) == -1) {
     perror("p2p peer: send");
     close(s);
     return 1;
-  }
-  uint32_t id;
+  }  uint32_t id;
   uint32_t peerip;
   uint32_t peerport;
   char peername[INET_ADDRSTRLEN];
   char peerinfo[10];
   int totalbytes = 0;
   int recbytes = 1;
-  printf("recieving data :\n");
   while (totalbytes < 10) {
     recbytes = recv(s, buf, sizeof(buf), 0);
-    printf("recieved %d bytes\n", recbytes);
     if (recbytes == -1) {
       perror("p2p peer: recv");
       close(s);
