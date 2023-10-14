@@ -180,3 +180,4 @@ int search(int s, char *buf) {
   }
   //Recv  then parse with inet)ntop
   return 0; 
+}
