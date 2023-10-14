@@ -200,9 +200,10 @@ int search(int s, char *buf) {
     totalbytes = totalbytes + recbytes;
   }
   for (int i = 0; i < 10; i++) {
-    if (peerinfo[i] != '0') {
+    if (peerinfo[i] != 0) {
       break;
-    } else {
+    }
+    if (i == 9) {
       printf("File not found!\n");
       return 0;
     }
@@ -219,4 +220,3 @@ int search(int s, char *buf) {
   printf("%s:%d\n", peername, peerport);
   return 0;
 }
-int main(int argc, char *argv[]) {
