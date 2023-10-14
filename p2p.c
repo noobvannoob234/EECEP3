@@ -6,6 +6,7 @@
 /* This code is an updated version of the sample code from "Computer Networks: A
  * Systems Approach," 5th Edition by Larry L. Peterson and Bruce S. Davis. Some
  * code comes from man pages, mostly getaddrinfo(3). */
+#include <arpa/inet.h>
 #include <dirent.h>
 #include <netdb.h>
 #include <stdio.h>
@@ -32,19 +33,20 @@ int publish(int s, char *buf);
 int main(int argc, char *argv[]) {
   char input[10], buf[BUFFER_SIZE];
 
-  if (argc != 2) {
-    printf("usage: port#\n");
+  if (argc != 4) {
+    printf("usage: host port peerid\n");
     exit(1);
   }
-  char *port = argv[1];
+  char *host = argv[1];
+  char *port = argv[2];
+  int id = atoi(argv[3]);
   if (atoi(port) <= 2000 || atoi(port) >= 65535) {
     printf("Invalid port number.\n");
     exit(1);
   }
 
-  char *host = "localhost";
   int s; // fd
-  uint32_t peerid = 3789;
+  uint32_t peerid = (uint32_t)id;
   /* Lookup IP and connect to server */
   if ((s = lookup_and_connect(host, port)) < 0) {
     exit(1);
@@ -132,6 +134,7 @@ int join(uint32_t id, int s, char *buf) {
     close(s);
     return 1;
   }
+  return 0;
 }
 int publish(int s, char *buf) {
   int length = 0;
@@ -168,26 +171,24 @@ int publish(int s, char *buf) {
 }
 
 int search(int s, char *buf) {
-  char input[20];
+  char input[200];
   printf("Enter a file name: ");
   if (fgets(input, sizeof(input), stdin) == NULL) {
     printf("error, return -1\n");
     return -1;
   }
   char *p = strchr(input, '\n');
-  if (p) *p = '\0'; 
+  if (p)
+    *p = '\0';
   int index = (int)(p - input);
   buf[0] = 2;
   memcpy(buf + 1, input, index + 1);
-  for(int i = 0; i < index + 2; i++){
-  if(input[i] = '\0'){printf("0");}
-  printf("%c", input[i]);
-  }
   if (send(s, buf, index + 2, 0) == -1) {
     perror("p2p peer: send");
     close(s);
     return 1;
-  }  uint32_t id;
+  }
+  uint32_t id;
   uint32_t peerip;
   uint32_t peerport;
   char peername[INET_ADDRSTRLEN];
