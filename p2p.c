@@ -210,8 +210,7 @@ int search(int s, char *buf) {
   memcpy(&id, peerinfo, 4);
   memcpy(&peerip, peerinfo + 4, 4);
   memcpy(&peerport, peerinfo + 8, 2);
-  id = ntohl(id);
-  peerip = ntohl(peerip);
+  id = htonl(id);
   peerport = ntohs(peerport);
   inet_ntop(AF_INET, &peerip, peername, INET_ADDRSTRLEN);
 
