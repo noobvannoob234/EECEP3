@@ -1,11 +1,7 @@
 // Andrew Roda, Myles Coleman
-// 9/23/2023
+// 10/13/2023
 // EECE 446
-// Progra// Andrew Roda, Myles Coleman
-// 9/23/2023
-// EECE 446
-// Program 1
-// uses code from stream-talk-client.c
+// Program 2
 
 /* This code is an updated version of the sample code from "Computer Networks: A
  * Systems Approach," 5th Edition by Larry L. Peterson and Bruce S. Davis. Some
@@ -127,12 +123,10 @@ int lookup_and_connect(const char *host, const char *service) {
 
 /* send join request to server */
 int join(uint32_t id, int s, char *buf) {
-
+  id = htonl(id);
   buf[0] = 0;
-
   memcpy(buf + 1, &id, 4);
-
-  if (send(s, buf, sizeof(buf), 0) == -1) {
+  if (send(s, buf, 5, 0) == -1) {
     perror("p2p peer: send");
     close(s);
     return 1;
@@ -166,6 +160,7 @@ int publish(int s, char *buf) {
 }
 
 int search(int s, char *buf) {
+
   char input[20];
   if (fgets(input, sizeof(input), stdin))
     return -1;
@@ -178,6 +173,30 @@ int search(int s, char *buf) {
     close(s);
     return 1;
   }
-  //Recv  then parse with inet)ntop
-  return 0; 
+
+
+  uint32_t id;
+  uint32_t peerip;
+  uint32_t peerport;
+  char *peername;
+
+  if (recv(s, buf, sizeof(buf), 0) == -1) {
+    perror("p2p peer: recv");
+    close(s);
+    return 1;
+  }
+  
+  memcpy(id, buf, 4); 
+  memcpy(peerip, buf + 4, 4); 
+  memcpy(peerport, buf + 8, 2);
+
+  id = ntohl(id);
+  peerip = ntohl(peerip);
+  peerport = ntohs(peerport);
+
+  inet_ntop(AF_INET, &peerip, peername, 4);
+
+  return 0;
 }
+
+
