@@ -213,7 +213,6 @@ int search(int s, char *buf) {
   id = htonl(id);
   peerport = ntohs(peerport);
   inet_ntop(AF_INET, &peerip, peername, INET_ADDRSTRLEN);
-
   printf("File found at\n");
   printf("peer %u\n", id);
   printf("%s:%d\n", peername, peerport);
