@@ -169,8 +169,9 @@ int publish(int s, char *buf) {
 int search(int s, char *buf) {
   printf("Enter file name: ");
   char input[20];
-  if (fgets(input, sizeof(input), stdin))
+  if (fgets(input, sizeof(input), stdin)) {
     return -1;
+  }
   char *p = strchr(input, '\n');
   int index = (int)(p - input);
   buf[0] = 2;
