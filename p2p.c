@@ -173,6 +173,7 @@ char* search(int s, char *buf) {
     close(s);
   }
 
+
   uint32_t id;
   uint32_t peerip;
   uint32_t peerport;
@@ -193,4 +194,5 @@ char* search(int s, char *buf) {
 
   return buf;
 }
+
 
