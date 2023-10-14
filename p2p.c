@@ -13,11 +13,9 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#define JOIN_ACTION 0
-#define PUBLISH_ACTION 1
-#define SEARCH_ACTION 2
-#define FETCH_ACTION 3
+#include <dirent.h>
 #define PUBLISH_DIRECTORY "SharedFiles"
+#define BUFFER_SIZE 200
 /*
  * Lookup a host IP address and connect to it using service. Arguments match the
  * first two arguments to getaddrinfo(3).
@@ -27,72 +25,63 @@
  */
 int lookup_and_connect(const char *host, const char *service);
 
-int join(uint32_t id, int s, char buf[]); 
-int search(int s, char buf[], char filename[]); 
-int publish(); 
+int join(uint32_t id, int s, char *buf);
+int search(int s, char *buf);
+int publish(int s, char *buf);
 
 int main(int argc, char *argv[]) {
+  char input[10], buf[BUFFER_SIZE];
 
-  char* SERVER_PORT;
-  char input[10]; 
-
-  if(argc == 2){
-    char* SERVER_PORT = argv[1];   
-    if(atoi(SERVER_PORT) <= 2000 || atoi(SERVER_PORT) >= 65535){
-      printf("Invalid port number.\n");
-      exit(1);
-    }
-    else{
-        printf("usage: %s port#\n");
-        exit(1); 
-    }
+  if (argc != 2) {
+    printf("usage: port#\n");
+    exit(1);
+  }
+  char *port = argv[1];
+  if (atoi(port) <= 2000 || atoi(port) >= 65535) {
+    printf("Invalid port number.\n");
+    exit(1);
   }
 
   char *host = "www.ecst.csuchico.edu";
   int s; // fd
-  uint32_t peerid = 3789; 
-
+  uint32_t peerid = 3789;
   /* Lookup IP and connect to server */
-  if ((s = lookup_and_connect(host, SERVER_PORT)) < 0) {
+  if ((s = lookup_and_connect(host, port)) < 0) {
     exit(1);
   }
-
-  /* main while loop for user input*/
-  while(strcmp(input,"EXIT") != 0){
-    fgets(input, sizeof(input), stdin);
-    char * p = strchr(input, '\n' );
-    if (p) *p = '\0';
-    if(strcmp(input, "JOIN") == 0){
-      if(join(peerid, s, ) == 1){
-        perror("Invalid\n"); 
-        return 1; 
-      }
+  while (strcmp(input, "EXIT") != 0) {
+    if (fgets(input, sizeof(input), stdin) == NULL) {
+      printf("Fgets error\n");
+      break;
     }
-    else if(strcmp(input,"SEARCH") == 0){
-      if(search() == 1){
-        perror("Invalid\n"); 
-        return 1; 
+    char *p = strchr(input, '\n');
+    if (p)
+      *p = '\0';
+    if (strcmp(input, "JOIN") == 0) {
+      if (join(peerid, s, buf) == 1) {
+        perror("Invalid\n");
+        return 1;
       }
-    }
-    else if(strcmp(input,"PUBLISH") == 0){
-      if(publish() == 1){
-        perror("Invalid\n"); 
-        return 1; 
+    } else if (strcmp(input, "PUBLISH") == 0) {
+      if (publish(s, buf) == 1) {
+        perror("Invalid\n");
+        return 1;
       }
-    }
-    else if(strcmp(input,"EXIT")== 0){
+    } else if (strcmp(input, "SEARCH") == 0) {
+      if (search(s, buf) == 1) {
+        perror("Invalid\n");
+        return 1;
+      }
+    } else if (strcmp(input, "EXIT") == 0) {
       printf("exiting\n");
+    } else {
+      printf("Invalid input\n");
     }
-    else{
-    printf("Invalid input\n");
-    }     
   }
-    
-  /* Main loop: get and send lines of text */
   close(s);
   return 0;
-}  
-  
+}
+
 int lookup_and_connect(const char *host, const char *service) {
   struct addrinfo hints;
   struct addrinfo *rp, *result;
@@ -126,30 +115,69 @@ int lookup_and_connect(const char *host, const char *service) {
     perror("stream-talk-client: connect");
     return -1;
   }
-  
+
   freeaddrinfo(result);
 
   return s;
 }
 
 /* send join request to server */
-int join(uint32_t id, int s, char buf[]) {
+int join(uint32_t id, int s, char *buf) {
   id = htonl(id);
-  buf[0] = 0; //JOIN_ACTION = 0
+  buf[0] = 0;
   memcpy(buf + 1, &id, 4);
-  if (send(s, buf, sizeof(buf), 0) == -1) {
-        perror("p2p peer: send");
-        close(s);
-        return 1;
+  if (send(s, buf, 5, 0) == -1) {
+    perror("p2p peer: send");
+    close(s);
+    return 1;
   }
-  return 0;
+}
+int publish(int s, char *buf) {
+  int length = 0; 
+  DIR *d;
+  struct dirent *dir;
+  uint32_t ncount = 0;
+
+  d = opendir(PUBLISH_DIRECTORY);
+  if (d) {
+    while ((dir = readdir(d))) {
+      if (dir->d_type != DT_DIR) {
+        if (length + strlen(dir->d_name) + 1 > BUFFER_SIZE) {
+          printf("Packet exceeds max permitted size\n");
+          return -1;
+        }
+        for (int i = 0; i < strlen(dir->d_name) + 1; i++) {
+          buf[length + 5 + i] = dir->d_name[i];
+        }
+        length = length + strlen(dir->d_name) + 1;
+        ncount++;
+      }
+    }
+    closedir(d);
+  }
+  
+  return 0; 
 }
 
-int search(int s, char buf[], char filename[]) {
+int search(int s, char *buf) {
+
+  char input[20];
+  if (fgets(input, sizeof(input), stdin))
+    return -1;
+  char *p = strchr(input, '\n');
+  int index = (int)(p - input);
+  buf[0] = 2;
+  memcpy(buf + 1, input, index); 
+  if (send(s, buf, sizeof(buf), 0) == -1) {
+    perror("p2p peer: send");
+    close(s);
+    return 1;
+  }
 
   uint32_t id;
-  uint32_t peer_ip;
-  uint32_t peer_port;
+  uint32_t peerip;
+  uint32_t peerport;
+  char *peername;
 
   if (recv(s, buf, sizeof(buf), 0) == -1) {
     perror("p2p peer: recv");
@@ -158,13 +186,15 @@ int search(int s, char buf[], char filename[]) {
   }
   
   memcpy(id, buf, 4); 
-  memcpy(peer_ip, buf + 4, 4); 
-  memcpy(peer_port, buf + 8, 2); 
+  memcpy(peerip, buf + 4, 4); 
+  memcpy(peerport, buf + 8, 2);
 
+  id = ntohl(id);
+  peerip = ntohl(peerip);
+  peerport = ntohs(peerport);
+
+  inet_ntop(AF_INET, &peerip, peername, 4);
 
   return 0;
 }
 
-int publish() {
-  return 0;
-}
