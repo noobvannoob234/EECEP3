@@ -185,9 +185,9 @@ int search(int s, char *buf) {
     return 1;
   } else {
 
-    memcpy(id, &buf, 4); 
-    memcpy(peerip, &buf + 4, 4); 
-    memcpy(peerport, &buf + 8, 2);
+    memcpy(&id, buf, 4); 
+    memcpy(&peerip, buf + 4, 4); 
+    memcpy(&peerport, buf + 8, 2);
     id = ntohl(id);
     peerip = ntohl(peerip);
     peerport = ntohs(peerport);
