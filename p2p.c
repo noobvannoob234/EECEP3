@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  char *host = "www.ecst.csuchico.edu";
+  char *host = "localhost";
   int s; // fd
   uint32_t peerid = 3789;
   /* Lookup IP and connect to server */
