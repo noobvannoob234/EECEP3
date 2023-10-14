@@ -219,4 +219,3 @@ int search(int s, char *buf) {
   printf("%s:%d\n", peername, peerport);
   return 0;
 }
-int main(int argc, char *argv[]) {
