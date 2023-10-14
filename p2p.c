@@ -174,7 +174,6 @@ int search(int s, char *buf) {
     return 1;
   }
 
-
   uint32_t id;
   uint32_t peerip;
   uint32_t peerport;
@@ -184,19 +183,20 @@ int search(int s, char *buf) {
     perror("p2p peer: recv");
     close(s);
     return 1;
+  } else {
+
+    memcpy(id, &buf, 4); 
+    memcpy(peerip, &buf + 4, 4); 
+    memcpy(peerport, &buf + 8, 2);
+    id = ntohl(id);
+    peerip = ntohl(peerip);
+    peerport = ntohs(peerport);
+    inet_ntop(AF_INET, &peerip, peername, 4);
+
+    printf("File found at\n");
+    printf("peer %d\n", id);
+    printf("%s\n", peername);
   }
-  
-  memcpy(id, buf, 4); 
-  memcpy(peerip, buf + 4, 4); 
-  memcpy(peerport, buf + 8, 2);
-
-  id = ntohl(id);
-  peerip = ntohl(peerip);
-  peerport = ntohs(peerport);
-
-  inet_ntop(AF_INET, &peerip, peername, 4);
-
   return 0;
 }
-
 
