@@ -215,7 +215,8 @@ int search(int s, char *buf) {
   inet_ntop(AF_INET, &peerip, peername, INET_ADDRSTRLEN);
 
   printf("File found at\n");
-  printf("peer %d\n", id);
+  printf("peer %u\n", id);
   printf("%s:%d\n", peername, peerport);
   return 0;
 }
+int main(int argc, char *argv[]) {
