@@ -50,6 +50,7 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
   while (strcmp(input, "EXIT") != 0) {
+    printf("Enter a command: ");
     if (fgets(input, sizeof(input), stdin) == NULL) {
       printf("Fgets error\n");
       break;
@@ -168,6 +169,7 @@ int publish(int s, char *buf) {
 
 int search(int s, char *buf) {
   char input[20];
+  printf("Enter a file name: ");
   if (fgets(input, sizeof(input), stdin) == NULL) {
     printf("error, return -1\n");
     return -1;
@@ -202,9 +204,8 @@ int search(int s, char *buf) {
   for (int i = 0; i < 10; i++) {
     if (peerinfo[i] != 0) {
       break;
-    }
-    if (i == 9) {
-      printf("File not found!\n");
+    } else {
+      printf("File not indexed by registry\n");
       return 0;
     }
   }
