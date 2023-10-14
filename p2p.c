@@ -155,7 +155,14 @@ int publish(int s, char *buf) {
     }
     closedir(d);
   }
-  
+  buf[0] = 1; 
+  ncount = htonl(ncount); 
+  memcpy(buf + 1, &ncount, 4);
+  if (send(s, buf, length + 5, 0) == -1) {
+    perror("p2p peer: send");
+    close(s);
+    return 1;
+  }
   return 0; 
 }
 
