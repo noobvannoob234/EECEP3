@@ -167,28 +167,28 @@ int publish(int s, char *buf) {
 }
 
 int search(int s, char *buf) {
-  printf("Enter file name: ");
   char input[20];
-  if (fgets(input, sizeof(input), stdin)) {
+  if (fgets(input, sizeof(input), stdin) == NULL) {
+    printf("error, return -1\n");
     return -1;
   }
   char *p = strchr(input, '\n');
   int index = (int)(p - input);
   buf[0] = 2;
   memcpy(buf + 1, input, index);
-  printf("Sending!\n");
-  if (send(s, buf, index + 1, 0) == -1) {
+  buf[index + 2] = '\0';
+  if (send(s, buf, index + 2, 0) == -1) {
     perror("p2p peer: send");
     close(s);
     return 1;
   }
-
   uint32_t id;
   uint32_t peerip;
   uint32_t peerport;
   char *peername;
-
-  if (recv(s, buf, sizeof(buf), 0) == -1) {
+  int recbytes = recv(s, buf, sizeof(buf), 0);
+  printf("recieved %d bytes", recbytes);
+  if (recbytes == -1) {
     perror("p2p peer: recv");
     close(s);
     return 1;
