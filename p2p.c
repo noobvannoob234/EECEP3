@@ -6,6 +6,7 @@
 /* This code is an updated version of the sample code from "Computer Networks: A
  * Systems Approach," 5th Edition by Larry L. Peterson and Bruce S. Davis. Some
  * code comes from man pages, mostly getaddrinfo(3). */
+#include <dirent.h>
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,7 +14,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <dirent.h>
 #define PUBLISH_DIRECTORY "SharedFiles"
 #define BUFFER_SIZE 200
 /*
@@ -133,7 +133,7 @@ int join(uint32_t id, int s, char *buf) {
   }
 }
 int publish(int s, char *buf) {
-  int length = 0; 
+  int length = 0;
   DIR *d;
   struct dirent *dir;
   uint32_t ncount = 0;
@@ -155,27 +155,28 @@ int publish(int s, char *buf) {
     }
     closedir(d);
   }
-  buf[0] = 1; 
-  ncount = htonl(ncount); 
+  buf[0] = 1;
+  ncount = htonl(ncount);
   memcpy(buf + 1, &ncount, 4);
   if (send(s, buf, length + 5, 0) == -1) {
     perror("p2p peer: send");
     close(s);
     return 1;
   }
-  return 0; 
+  return 0;
 }
 
 int search(int s, char *buf) {
-
+  printf("Enter file name: ");
   char input[20];
   if (fgets(input, sizeof(input), stdin))
     return -1;
   char *p = strchr(input, '\n');
   int index = (int)(p - input);
   buf[0] = 2;
-  memcpy(buf + 1, input, index); 
-  if (send(s, buf, sizeof(buf), 0) == -1) {
+  memcpy(buf + 1, input, index);
+  printf("Sending!\n");
+  if (send(s, buf, index + 1, 0) == -1) {
     perror("p2p peer: send");
     close(s);
     return 1;
@@ -192,8 +193,8 @@ int search(int s, char *buf) {
     return 1;
   } else {
 
-    memcpy(&id, buf, 4); 
-    memcpy(&peerip, buf + 4, 4); 
+    memcpy(&id, buf, 4);
+    memcpy(&peerip, buf + 4, 4);
     memcpy(&peerport, buf + 8, 2);
     id = ntohl(id);
     peerip = ntohl(peerip);
@@ -206,4 +207,3 @@ int search(int s, char *buf) {
   }
   return 0;
 }
-
