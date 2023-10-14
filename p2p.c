@@ -82,9 +82,7 @@ int main(int argc, char *argv[]) {
       printf("Invalid input\n");
     }
   }
-
   close(s);
-
   return 0;
 }
 
@@ -182,4 +180,3 @@ int search(int s, char *buf) {
   }
   //Recv  then parse with inet)ntop
   return 0; 
-}
