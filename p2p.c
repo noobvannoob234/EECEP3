@@ -189,7 +189,7 @@ int search(int s, char *buf) {
   char peerinfo[10];
   int totalbytes = 0;
   int recbytes = 1;
-  while (recbytes != 0) {
+  while (totalbytes != 10) {
     recbytes = recv(s, buf, sizeof(buf), 0);
     if (recbytes == -1) {
       perror("p2p peer: recv");
@@ -207,11 +207,11 @@ int search(int s, char *buf) {
       return 0;
     }
   }
-  memcpy(&id, buf, 4);
-  memcpy(&peerip, buf + 4, 4);
-  memcpy(&peerport, buf + 8, 2);
+  memcpy(&id, peerinfo, 4);
+  memcpy(&peerip, peerinfo + 4, 4);
+  memcpy(&peerport, peerinfo + 8, 2);
   id = ntohl(id);
-  // peerip = ntohl(peerip);
+  peerip = ntohl(peerip);
   peerport = ntohs(peerport);
   inet_ntop(AF_INET, &peerip, peername, INET_ADDRSTRLEN);
 
