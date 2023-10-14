@@ -195,7 +195,7 @@ int search(int s, char *buf) {
 
     printf("File found at\n");
     printf("peer %d\n", id);
-    printf("%s\n", peername);
+    printf("%s:%d\n", peername, peerport);
   }
   return 0;
 }
