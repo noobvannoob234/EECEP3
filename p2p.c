@@ -196,7 +196,6 @@ int search(int s, char *buf) {
     printf("File found at\n");
     printf("peer %d\n", id);
     printf("%s\n", peername);
-    
   }
   return 0;
 }
