@@ -186,25 +186,37 @@ int search(int s, char *buf) {
   uint32_t peerip;
   uint32_t peerport;
   char peername[INET_ADDRSTRLEN];
-  int recbytes = recv(s, buf, sizeof(buf), 0);
-  printf("recieved %d bytes", recbytes);
-  if (recbytes == -1) {
-    perror("p2p peer: recv");
-    close(s);
-    return 1;
-  } else {
-
-    memcpy(&id, buf, 4);
-    memcpy(&peerip, buf + 4, 4);
-    memcpy(&peerport, buf + 8, 2);
-    id = ntohl(id);
-    // peerip = ntohl(peerip);
-    peerport = ntohs(peerport);
-    inet_ntop(AF_INET, &peerip, peername, INET_ADDRSTRLEN);
-
-    printf("File found at\n");
-    printf("peer %d\n", id);
-    printf("%s:%d\n", peername, peerport);
+  char peerinfo[10];
+  int totalbytes = 0;
+  int recbytes = 1;
+  while (recbytes != 0) {
+    recbytes = recv(s, buf, sizeof(buf), 0);
+    if (recbytes == -1) {
+      perror("p2p peer: recv");
+      close(s);
+      return 1;
+    }
+    memcpy(peerinfo + totalbytes, buf, recbytes);
+    totalbytes = totalbytes + recbytes;
   }
+  for (int i = 0; i < 10; i++) {
+    if (peerinfo[i] != '0') {
+      break;
+    } else {
+      printf("File not found!\n");
+      return 0;
+    }
+  }
+  memcpy(&id, buf, 4);
+  memcpy(&peerip, buf + 4, 4);
+  memcpy(&peerport, buf + 8, 2);
+  id = ntohl(id);
+  // peerip = ntohl(peerip);
+  peerport = ntohs(peerport);
+  inet_ntop(AF_INET, &peerip, peername, INET_ADDRSTRLEN);
+
+  printf("File found at\n");
+  printf("peer %d\n", id);
+  printf("%s:%d\n", peername, peerport);
   return 0;
 }
