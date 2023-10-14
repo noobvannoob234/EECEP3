@@ -185,7 +185,7 @@ int search(int s, char *buf) {
   uint32_t id;
   uint32_t peerip;
   uint32_t peerport;
-  char *peername;
+  char peername[INET_ADDRSTRLEN];
   int recbytes = recv(s, buf, sizeof(buf), 0);
   printf("recieved %d bytes", recbytes);
   if (recbytes == -1) {
@@ -198,9 +198,9 @@ int search(int s, char *buf) {
     memcpy(&peerip, buf + 4, 4);
     memcpy(&peerport, buf + 8, 2);
     id = ntohl(id);
-    peerip = ntohl(peerip);
+    // peerip = ntohl(peerip);
     peerport = ntohs(peerport);
-    inet_ntop(AF_INET, &peerip, peername, 4);
+    inet_ntop(AF_INET, &peerip, peername, INET_ADDRSTRLEN);
 
     printf("File found at\n");
     printf("peer %d\n", id);
