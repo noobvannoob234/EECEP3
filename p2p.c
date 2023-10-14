@@ -1,11 +1,7 @@
 // Andrew Roda, Myles Coleman
-// 9/23/2023
+// 10/13/2023
 // EECE 446
-// Progra// Andrew Roda, Myles Coleman
-// 9/23/2023
-// EECE 446
-// Program 1
-// uses code from stream-talk-client.c
+// Program 2
 
 /* This code is an updated version of the sample code from "Computer Networks: A
  * Systems Approach," 5th Edition by Larry L. Peterson and Bruce S. Davis. Some
@@ -32,7 +28,7 @@
 int lookup_and_connect(const char *host, const char *service);
 
 int join(uint32_t id, int s, char buf[]); 
-int search(); 
+int search(int s, char buf[], char filename[]); 
 int publish(); 
 
 int main(int argc, char *argv[]) {
@@ -67,7 +63,7 @@ int main(int argc, char *argv[]) {
     char * p = strchr(input, '\n' );
     if (p) *p = '\0';
     if(strcmp(input, "JOIN") == 0){
-      if(join(peerid, s, input) == 1){
+      if(join(peerid, s, ) == 1){
         perror("Invalid\n"); 
         return 1; 
       }
@@ -138,9 +134,10 @@ int lookup_and_connect(const char *host, const char *service) {
 
 /* send join request to server */
 int join(uint32_t id, int s, char buf[]) {
+  id = htonl(id);
   buf[0] = 0; //JOIN_ACTION = 0
   memcpy(buf + 1, &id, 4);
-  if (send(s, buf, sizeof(buf), 0) == -1) { //if send fails return error
+  if (send(s, buf, sizeof(buf), 0) == -1) {
         perror("p2p peer: send");
         close(s);
         return 1;
@@ -148,3 +145,26 @@ int join(uint32_t id, int s, char buf[]) {
   return 0;
 }
 
+int search(int s, char buf[], char filename[]) {
+
+  uint32_t id;
+  uint32_t peer_ip;
+  uint32_t peer_port;
+
+  if (recv(s, buf, sizeof(buf), 0) == -1) {
+    perror("p2p peer: recv");
+    close(s);
+    return 1;
+  }
+  
+  memcpy(id, buf, 4); 
+  memcpy(peer_ip, buf + 4, 4); 
+  memcpy(peer_port, buf + 8, 2); 
+
+
+  return 0;
+}
+
+int publish() {
+  return 0;
+}
