@@ -26,7 +26,7 @@
 int lookup_and_connect(const char *host, const char *service);
 
 int join(uint32_t id, int s, char *buf);
-int search(int s, char *buf);
+char* search(int s, char *buf);
 int publish(int s, char *buf);
 
 int main(int argc, char *argv[]) {
@@ -159,7 +159,7 @@ int publish(int s, char *buf) {
   return 0; 
 }
 
-int search(int s, char *buf) {
+char* search(int s, char *buf) {
 
   char input[20];
   if (fgets(input, sizeof(input), stdin))
@@ -171,7 +171,6 @@ int search(int s, char *buf) {
   if (send(s, buf, sizeof(buf), 0) == -1) {
     perror("p2p peer: send");
     close(s);
-    return 1;
   }
 
   uint32_t id;
@@ -182,19 +181,16 @@ int search(int s, char *buf) {
   if (recv(s, buf, sizeof(buf), 0) == -1) {
     perror("p2p peer: recv");
     close(s);
-    return 1;
   }
   
   memcpy(id, buf, 4); 
   memcpy(peerip, buf + 4, 4); 
   memcpy(peerport, buf + 8, 2);
-
   id = ntohl(id);
   peerip = ntohl(peerip);
   peerport = ntohs(peerport);
-
   inet_ntop(AF_INET, &peerip, peername, 4);
 
-  return 0;
+  return buf;
 }
 
