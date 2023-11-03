@@ -6,7 +6,6 @@
 /* This code is an updated version of the sample code from "Computer Networks: A
  * Systems Approach," 5th Edition by Larry L. Peterson and Bruce S. Davis. Some
  * code comes from man pages, mostly getaddrinfo(3). */
-#include <arpa/inet.h>
 #include <dirent.h>
 #include <netdb.h>
 #include <stdio.h>
@@ -15,6 +14,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <arpa/inet.h>
 #define PUBLISH_DIRECTORY "SharedFiles"
 #define BUFFER_SIZE 200
 /*
@@ -134,7 +134,7 @@ int join(uint32_t id, int s, char *buf) {
     close(s);
     return 1;
   }
-  return 0;
+ return 0; 
 }
 int publish(int s, char *buf) {
   int length = 0;
@@ -178,8 +178,7 @@ int search(int s, char *buf) {
     return -1;
   }
   char *p = strchr(input, '\n');
-  if (p)
-    *p = '\0';
+  if (p) *p = '\0'; 
   int index = (int)(p - input);
   buf[0] = 2;
   memcpy(buf + 1, input, index + 1);
@@ -187,8 +186,7 @@ int search(int s, char *buf) {
     perror("p2p peer: send");
     close(s);
     return 1;
-  }
-  uint32_t id;
+  }  uint32_t id;
   uint32_t peerip;
   uint32_t peerport;
   char peername[INET_ADDRSTRLEN];
